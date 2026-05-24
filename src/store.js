@@ -19,6 +19,15 @@ class Store extends EventTarget {
   constructor() {
     super();
     this.profile = this.load('bitebalance_profile', DEFAULT_PROFILE);
+    
+    // Auto-migrate: If the cached key in localStorage is the old leaked key or is empty,
+    // and we have a new key injected from environment variables, overwrite the cached key!
+    const oldLeakedKey = 'AIzaSyCr-kJ2CqXpsoLDRdxnSLhoFM5l7v39Loo';
+    if ((!this.profile.apiKey || this.profile.apiKey === oldLeakedKey) && DEFAULT_API_KEY) {
+      this.profile.apiKey = DEFAULT_API_KEY;
+      this.save('bitebalance_profile', this.profile);
+    }
+    
     this.days = this.load('bitebalance_days', {});
     this.customFoods = this.load('bitebalance_custom_foods', []);
     this.onboarded = this.load('bitebalance_onboarded', false);
