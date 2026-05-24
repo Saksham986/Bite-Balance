@@ -30,11 +30,12 @@ export class DashboardPage {
 
     const greeting = this.getTimeGreeting();
     const score = day.score?.overallScore;
+    const userName = profile.name || 'Saksham';
 
     this.container.innerHTML = `
       <header class="page-header dashboard-header flex-row justify-between align-center">
         <div>
-          <h1 class="page-title greeting-text">${greeting}, ${profile.name}</h1>
+          <h1 class="page-title greeting-text">${greeting}, ${userName}</h1>
           <p class="page-subtitle">Let's keep your nutrition balanced today.</p>
         </div>
         <div class="streak-badge" title="Logging Streak">
