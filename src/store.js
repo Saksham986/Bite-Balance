@@ -2,7 +2,7 @@
    BiteBalance Reactive Application Store
    ============================================ */
 
-const DEFAULT_API_KEY = 'AIzaSyCr-kJ2CqXpsoLDRdxnSLhoFM5l7v39Loo';
+const DEFAULT_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 
 const DEFAULT_PROFILE = {
   name: 'Saksham',
