@@ -30,7 +30,7 @@ class Store extends EventTarget {
     
     this.days = this.load('bitebalance_days', {});
     this.customFoods = this.load('bitebalance_custom_foods', []);
-    this.onboarded = this.load('bitebalance_onboarded', false);
+    this.onboarded = this.load('bitebalance_onboarded', true);
     
     // Set theme on startup
     this.applyTheme(this.profile.preferences.theme);
@@ -267,7 +267,7 @@ class Store extends EventTarget {
     this.profile = DEFAULT_PROFILE;
     this.days = {};
     this.customFoods = [];
-    this.onboarded = false;
+    this.onboarded = true;
     this.applyTheme('light');
     
     this.notify('days_change');

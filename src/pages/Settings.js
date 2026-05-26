@@ -185,7 +185,7 @@ export class SettingsPage {
         store.clearAllData();
         Toast.warning('App database cleared completely.');
         setTimeout(() => {
-          window.location.hash = '#/onboarding';
+          window.location.hash = '#/';
         }, 1000);
       }
     });

@@ -9,7 +9,6 @@ import { DailySummaryPage } from './pages/DailySummary.js';
 import { AnalyticsPage } from './pages/Analytics.js';
 import { HistoryPage } from './pages/History.js';
 import { SettingsPage } from './pages/Settings.js';
-import { OnboardingPage } from './pages/Onboarding.js';
 import { getTodayDateString } from './utils.js';
 
 export class Router {
@@ -58,12 +57,6 @@ export class Router {
   handleRoute() {
     const rawHash = window.location.hash || '#/';
     
-    // Check onboarding
-    if (!store.onboarded && rawHash !== '#/onboarding') {
-      window.location.hash = '#/onboarding';
-      return;
-    }
-
     // Split route and query params
     const [pathPart, queryPart] = rawHash.split('?');
     const path = pathPart === '#/' ? '#/' : (pathPart.endsWith('/') ? pathPart.slice(0, -1) : pathPart);
@@ -73,8 +66,8 @@ export class Router {
 
     // Simple routing table matching
     if (path === '#/onboarding') {
-      pageInstance = new OnboardingPage();
-      activeTab = null;
+      window.location.hash = '#/';
+      return;
     } else if (path === '#/') {
       pageInstance = new DashboardPage();
       activeTab = 'dashboard';
