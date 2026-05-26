@@ -57,7 +57,7 @@ export class DailySummaryPage {
   renderEvaluationPrompt(meals) {
     this.container.innerHTML = `
       <header class="page-header">
-        <a href="#/" class="btn-back">◀ Dashboard</a>
+        <a href="#/?date=${this.dateStr}" class="btn-back">◀ Dashboard</a>
         <h1 class="page-title">Summary</h1>
         <p class="page-subtitle">${formatDate(this.dateStr)}</p>
       </header>
@@ -156,7 +156,7 @@ export class DailySummaryPage {
 
     this.container.innerHTML = `
       <header class="page-header flex-row justify-between">
-        <a href="#/" class="btn-back">◀ Today</a>
+        <a href="#/?date=${this.dateStr}" class="btn-back">◀ Today</a>
         <button class="btn btn-secondary btn-icon" id="btn-re-evaluate" title="Re-evaluate Day">🔄</button>
       </header>
 

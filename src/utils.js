@@ -46,11 +46,19 @@ export function formatFullDate(dateStr) {
   return date.toLocaleDateString('en-US', options);
 }
 
-export function getTodayDateString() {
-  const date = new Date();
+export function getDateString(date = new Date()) {
   const offset = date.getTimezoneOffset();
   const localDate = new Date(date.getTime() - (offset*60*1000));
   return localDate.toISOString().split('T')[0];
+}
+
+export function getTodayDateString() {
+  return getDateString(new Date());
+}
+
+export function parseLocalDate(dateStr) {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
 }
 
 export function downloadFile(content, fileName, contentType) {

@@ -5,7 +5,7 @@
 import { store } from '../store.js';
 import { foodDatabase, allSuggestions } from '../data/foods.js';
 import { Toast } from '../components/Toast.js';
-import { getTodayDateString, formatDate } from '../utils.js';
+import { getTodayDateString, formatDate, getDateString, parseLocalDate } from '../utils.js';
 
 export class MealLogPage {
   constructor() {
@@ -32,10 +32,30 @@ export class MealLogPage {
     const day = store.getDay(this.dateStr);
     const mealItems = day.meals[this.currentMeal] || [];
 
+    const todayStr = getTodayDateString();
+    const yesterdayDate = parseLocalDate(todayStr);
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterdayStr = getDateString(yesterdayDate);
+
+    let dayLabel = '';
+    if (this.dateStr === todayStr) {
+      dayLabel = 'Today';
+    } else if (this.dateStr === yesterdayStr) {
+      dayLabel = 'Yesterday';
+    }
+
     this.container.innerHTML = `
-      <header class="page-header flex-row justify-between">
-        <a href="#/" class="btn-back">◀ Home</a>
-        <div class="header-date-badge">${formatDate(this.dateStr)}</div>
+      <header class="page-header flex-row justify-between align-center">
+        <a href="#/?date=${this.dateStr}" class="btn-back" style="margin-bottom: 0;">◀ Home</a>
+        
+        <div class="meal-log-date-controls flex-row align-center gap-1">
+          <button class="btn-date-nav-small" id="btn-log-prev-day" title="Previous Day">◀</button>
+          <div class="header-date-badge date-display-wrapper-small" style="position: relative;">
+            <span>📅 ${dayLabel === 'Today' || dayLabel === 'Yesterday' ? dayLabel : formatDate(this.dateStr)}</span>
+            <input type="date" id="log-date-picker" class="log-date-picker-input" value="${this.dateStr}" max="${todayStr}" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;" />
+          </div>
+          <button class="btn-date-nav-small" id="btn-log-next-day" title="Next Day" ${this.dateStr >= todayStr ? 'disabled' : ''}>▶</button>
+        </div>
       </header>
 
       <!-- Meal Selection Tabs -->
@@ -343,6 +363,30 @@ export class MealLogPage {
         if (listContainer) {
           listContainer.classList.add('hidden');
         }
+        return;
+      }
+
+      // 7.a Previous Day navigation in header
+      const logPrevBtn = e.target.closest('#btn-log-prev-day');
+      if (logPrevBtn) {
+        const date = parseLocalDate(this.dateStr);
+        date.setDate(date.getDate() - 1);
+        const prevDateStr = getDateString(date);
+        window.location.hash = `#/log?date=${prevDateStr}`;
+        return;
+      }
+
+      // 7.b Next Day navigation in header
+      const logNextBtn = e.target.closest('#btn-log-next-day');
+      if (logNextBtn) {
+        const todayStr = getTodayDateString();
+        if (this.dateStr < todayStr) {
+          const date = parseLocalDate(this.dateStr);
+          date.setDate(date.getDate() + 1);
+          const nextDateStr = getDateString(date);
+          window.location.hash = `#/log?date=${nextDateStr}`;
+        }
+        return;
       }
     });
 
@@ -384,5 +428,15 @@ export class MealLogPage {
       });
       window._bitebalance_doc_click_bound = true;
     }
+
+    // 10. Date picker change event
+    this.container.addEventListener('change', (e) => {
+      if (e.target.id === 'log-date-picker') {
+        const val = e.target.value;
+        if (val) {
+          window.location.hash = `#/log?date=${val}`;
+        }
+      }
+    });
   }
 }

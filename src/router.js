@@ -10,6 +10,7 @@ import { AnalyticsPage } from './pages/Analytics.js';
 import { HistoryPage } from './pages/History.js';
 import { SettingsPage } from './pages/Settings.js';
 import { OnboardingPage } from './pages/Onboarding.js';
+import { getTodayDateString } from './utils.js';
 
 export class Router {
   constructor(appMountPoint, onNavigate) {
@@ -18,6 +19,36 @@ export class Router {
     
     // Bind hash change listener
     window.addEventListener('hashchange', () => this.handleRoute());
+
+    // Listen to focus and visibility changes to detect date changes (e.g. overnight)
+    const handleDateRollover = () => {
+      const todayStr = getTodayDateString();
+      if (this.lastDateStr && this.lastDateStr !== todayStr) {
+        this.lastDateStr = todayStr;
+        
+        const rawHash = window.location.hash || '#/';
+        const [path, query] = rawHash.split('?');
+        const params = new URLSearchParams(query || '');
+        const dateParam = params.get('date');
+        
+        // If they are viewing "today" (either no date parameter, or date parameter matches yesterday's date)
+        if (!dateParam || dateParam === this.lastCheckedDate) {
+          // Force route reload to update the view to the new current date!
+          this.handleRoute();
+        }
+      }
+      this.lastCheckedDate = todayStr;
+    };
+    
+    this.lastCheckedDate = getTodayDateString();
+    this.lastDateStr = getTodayDateString();
+    
+    window.addEventListener('focus', handleDateRollover);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        handleDateRollover();
+      }
+    });
   }
 
   init() {

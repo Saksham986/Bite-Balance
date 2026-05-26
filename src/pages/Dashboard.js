@@ -3,11 +3,12 @@
    ============================================ */
 
 import { store } from '../store.js';
-import { getRandomQuote, getScoreColor, getScoreLabel, getTodayDateString, formatDate } from '../utils.js';
+import { getRandomQuote, getScoreColor, getScoreLabel, getTodayDateString, formatDate, getDateString, parseLocalDate, formatFullDate } from '../utils.js';
 
 export class DashboardPage {
   constructor() {
-    this.dateStr = getTodayDateString();
+    const params = new URLSearchParams(window.location.hash.split('?')[1] || '');
+    this.dateStr = params.get('date') || getTodayDateString();
   }
 
   render() {
@@ -32,17 +33,42 @@ export class DashboardPage {
     const score = day.score?.overallScore;
     const userName = profile.name || 'Saksham';
 
+    const todayStr = getTodayDateString();
+    const yesterdayDate = parseLocalDate(todayStr);
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterdayStr = getDateString(yesterdayDate);
+
+    let dayLabel = '';
+    if (this.dateStr === todayStr) {
+      dayLabel = 'Today';
+    } else if (this.dateStr === yesterdayStr) {
+      dayLabel = 'Yesterday';
+    }
+
     this.container.innerHTML = `
       <header class="page-header dashboard-header flex-row justify-between align-center">
         <div>
           <h1 class="page-title greeting-text">${greeting}, ${userName}</h1>
-          <p class="page-subtitle">Let's keep your nutrition balanced today.</p>
+          <p class="page-subtitle">${this.dateStr === todayStr ? "Let's keep your nutrition balanced today." : `Viewing meals logged for ${formatDate(this.dateStr)}.`}</p>
         </div>
         <div class="streak-badge" title="Logging Streak">
           <span>🔥</span>
           <span class="streak-number">${streak}</span>
         </div>
       </header>
+
+      <!-- Date Selector Bar -->
+      <section class="card date-selector-card flex-row align-center justify-between">
+        <button class="btn-date-nav" id="btn-prev-day" title="Previous Day">◀</button>
+        <div class="date-display-wrapper flex-row align-center justify-center">
+          <span class="calendar-emoji">📅</span>
+          <span class="selected-date-text">${dayLabel === 'Today' || dayLabel === 'Yesterday' ? `${dayLabel} (${formatDate(this.dateStr)})` : formatFullDate(this.dateStr)}</span>
+          <div class="date-input-overlay-container">
+            <input type="date" id="dashboard-date-picker" class="dashboard-date-picker" value="${this.dateStr}" max="${todayStr}" />
+          </div>
+        </div>
+        <button class="btn-date-nav" id="btn-next-day" title="Next Day" ${this.dateStr >= todayStr ? 'disabled' : ''}>▶</button>
+      </section>
 
       <!-- Motivation Quote Panel -->
       <section class="card quote-card flex-row align-center">
@@ -53,7 +79,7 @@ export class DashboardPage {
       <!-- Score Gauge Widget -->
       <section class="card today-score-card flex-row align-center justify-between">
         <div class="score-widget-left">
-          <h3>Today's Health Rating</h3>
+          <h3>${this.dateStr === todayStr ? "Today's Health Rating" : `${dayLabel || formatDate(this.dateStr)}'s Health Rating`}</h3>
           ${score !== undefined ? `
             <p class="score-status-desc">Your meals are evaluated! Tap details below to review your nutritional tips.</p>
             <a href="#/summary/${this.dateStr}" class="btn btn-primary" style="margin-top: var(--space-3);">See Report Details</a>
@@ -88,7 +114,7 @@ export class DashboardPage {
 
       <!-- Meal Cards Log Overview -->
       <section class="meals-log-overview stagger-children">
-        <h3 class="section-title">Today's Meals</h3>
+        <h3 class="section-title">${this.dateStr === todayStr ? "Today's Meals" : `${dayLabel || formatDate(this.dateStr)}'s Meals`}</h3>
         
         <div class="meal-log-cards-grid stagger-children">
           ${this.renderMealCard('Breakfast', 'breakfast', '🍳', day.meals.breakfast)}
@@ -99,6 +125,44 @@ export class DashboardPage {
         </div>
       </section>
     `;
+
+    this.bindEvents();
+  }
+
+  bindEvents() {
+    const prevBtn = this.container.querySelector('#btn-prev-day');
+    const nextBtn = this.container.querySelector('#btn-next-day');
+    const datePicker = this.container.querySelector('#dashboard-date-picker');
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        const date = parseLocalDate(this.dateStr);
+        date.setDate(date.getDate() - 1);
+        const prevDateStr = getDateString(date);
+        window.location.hash = `#/?date=${prevDateStr}`;
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        const todayStr = getTodayDateString();
+        if (this.dateStr < todayStr) {
+          const date = parseLocalDate(this.dateStr);
+          date.setDate(date.getDate() + 1);
+          const nextDateStr = getDateString(date);
+          window.location.hash = `#/?date=${nextDateStr}`;
+        }
+      });
+    }
+
+    if (datePicker) {
+      datePicker.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val) {
+          window.location.hash = `#/?date=${val}`;
+        }
+      });
+    }
   }
 
   getTimeGreeting() {
